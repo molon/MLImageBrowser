@@ -50,7 +50,7 @@ static inline CGRect _kConvertBoundsFromViewToViewOrWindow(UIView *bView,UIView 
 #define kAnimateDuration 0.25f
 #define kMinMaximumZoomScale 2.5f
 #define kAnimateScaleForSelf 1.2f //没有缩略图的时候的自身scale动画值
-#define kMLImageBrowserCollectionViewCellPanOverstepHeight 50.0f
+#define kMLImageBrowserCollectionViewCellPanOverstepHeight 100.0f
 
 @interface MLImageBrowserItem()
 
