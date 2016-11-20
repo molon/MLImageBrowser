@@ -1,0 +1,11 @@
+source 'https://github.com/CocoaPods/Specs.git'
+
+platform :ios, '7.0'
+
+workspace 'MLImageBrowser.xcworkspace'
+
+target 'MLImageBrowser' do
+	project 'MLImageBrowser.xcodeproj'
+    
+    pod 'MLImageBrowser', :path => '../MLImageBrowser.podspec'
+end
