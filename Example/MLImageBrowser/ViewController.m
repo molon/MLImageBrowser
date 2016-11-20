@@ -7,8 +7,8 @@
 //
 
 #import "ViewController.h"
-#import <MLImageBrowser.h>
-#import <UIImageView+WebCache.h>
+#import <MLImageBrowser/MLImageBrowser.h>
+#import <SDWebImage/UIImageView+WebCache.h>
 
 #define kBaseTag 100
 @interface ViewController ()

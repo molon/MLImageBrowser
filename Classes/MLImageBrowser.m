@@ -7,7 +7,7 @@
 //
 
 #import "MLImageBrowser.h"
-#import <UIImageView+WebCache.h>
+#import <SDWebImage/UIImageView+WebCache.h>
 
 static inline CGPoint _kCenterOfScrollView(UIScrollView *scrollView) {
     CGFloat offsetX = (scrollView.bounds.size.width > scrollView.contentSize.width)?
@@ -927,7 +927,7 @@ typedef NS_ENUM(NSUInteger, MLImageBrowserCollectionViewCellScrollDirection) {
 - (void)updatePageDisplay {
     NSInteger currentPage = [self currentPage];
     _pageLabel.hidden = _items.count<=1;
-    _pageLabel.text = [NSString stringWithFormat:@"%ld/%ld",currentPage+1,_items.count];
+    _pageLabel.text = [NSString stringWithFormat:@"%ld/%ld",(long)(currentPage+1),(long)_items.count];
     
     if (_isPresented) {
         //这里有这个判断是因为此方法在collectionView第一次reload之前就会执行，若此时就hide缩略图view的话在大图从其位置显示之前是空白的有闪烁的感觉，毕竟reload可能需要一点点时间。
