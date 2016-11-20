@@ -25,34 +25,67 @@
     // Do any additional setup after loading the view, typically from a nib.
     self.title = @"MLImageBrowser";
     
-    //建立9个图片view
-    self.smallPics = @[
-                           @"http://ww1.sinaimg.cn/thumb180/006mwaFnjw1f9wlmdp6usg30bc06e7wh.gif",
-                           @"http://ww1.sinaimg.cn/thumb180/006mwaFnjw1f9wlmej3tcg30bc06eng2.gif",
-                           @"http://ww1.sinaimg.cn/thumb180/006mwaFnjw1f9wlmfd9trg30bc06ekaq.gif",
-                           @"http://ww1.sinaimg.cn/thumb180/006mwaFnjw1f9wlmg6ioqg30bc06etqk.gif",
-//                           @"",
-//                           @"",
-//                           @"",
-//                           @"",
-//                           @"",
-                           ];
-
-    self.largePics = @[
-                           @"http://ww1.sinaimg.cn/mw690/006mwaFnjw1f9wlmdp6usg30bc06e7wh.gif",
-                           @"http://ww1.sinaimg.cn/mw690/006mwaFnjw1f9wlmej3tcg30bc06eng2.gif",
-                           @"http://ww1.sinaimg.cn/mw690/006mwaFnjw1f9wlmfd9trg30bc06ekaq.gif",
-                           @"http://ww1.sinaimg.cn/mw690/006mwaFnjw1f9wlmg6ioqg30bc06etqk.gif",
-//                           @"",
-//                           @"",
-//                           @"",
-//                           @"",
-//                           @"",
-                           ];
+    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc]initWithTitle:@"Clear Cache" style:UIBarButtonItemStylePlain target:self action:@selector(clearCache)];
     
+//    self.smallPics = @[
+//                       @"http://77g7ef.com1.z0.glb.clouddn.com/1.jpg?imageView2/2/w/200",
+//                       @"http://77g7ef.com1.z0.glb.clouddn.com/2.jpg?imageView2/2/w/200",
+//                       @"http://77g7ef.com1.z0.glb.clouddn.com/3.jpg?imageView2/2/w/200",
+//                       @"http://77g7ef.com1.z0.glb.clouddn.com/4.jpg?imageView2/2/w/200",
+//                       @"http://77g7ef.com1.z0.glb.clouddn.com/5.jpg?imageView2/2/w/200",
+//                       @"http://77g7ef.com1.z0.glb.clouddn.com/6.jpg?imageView2/2/w/200",
+//                       @"http://77g7ef.com1.z0.glb.clouddn.com/7.jpg?imageView2/2/w/200",
+//                       @"http://77g7ef.com1.z0.glb.clouddn.com/8.jpg?imageView2/2/w/200",
+//                       @"http://77g7ef.com1.z0.glb.clouddn.com/9.jpg?imageView2/2/w/200",
+//                       ];
+//    
+//    self.largePics = @[
+//                       @"http://77g7ef.com1.z0.glb.clouddn.com/1.jpg",
+//                       @"http://77g7ef.com1.z0.glb.clouddn.com/2.jpg",
+//                       @"http://77g7ef.com1.z0.glb.clouddn.com/3.jpg",
+//                       @"http://77g7ef.com1.z0.glb.clouddn.com/4.jpg",
+//                       @"http://77g7ef.com1.z0.glb.clouddn.com/5.jpg",
+//                       @"http://77g7ef.com1.z0.glb.clouddn.com/6.jpg",
+//                       @"http://77g7ef.com1.z0.glb.clouddn.com/7.jpg",
+//                       @"http://77g7ef.com1.z0.glb.clouddn.com/8.jpg",
+//                       @"http://77g7ef.com1.z0.glb.clouddn.com/9.jpg",
+//                       ];
+    
+    self.smallPics = @[
+                       @"http://77g7ef.com1.z0.glb.clouddn.com/q1.jpg?imageView2/2/w/200",
+                       @"http://77g7ef.com1.z0.glb.clouddn.com/q2.jpg?imageView2/2/w/200",
+                       @"http://77g7ef.com1.z0.glb.clouddn.com/q3.jpg?imageView2/2/w/200",
+                       @"http://77g7ef.com1.z0.glb.clouddn.com/q4.jpg?imageView2/2/w/200",
+                       @"http://77g7ef.com1.z0.glb.clouddn.com/q5.jpg?imageView2/2/w/200",
+                       @"http://77g7ef.com1.z0.glb.clouddn.com/q6.jpg?imageView2/2/w/200",
+                       ];
+    
+    self.largePics = @[
+                       @"http://77g7ef.com1.z0.glb.clouddn.com/q1.jpg",
+                       @"http://77g7ef.com1.z0.glb.clouddn.com/q2.jpg",
+                       @"http://77g7ef.com1.z0.glb.clouddn.com/q3.jpg",
+                       @"http://77g7ef.com1.z0.glb.clouddn.com/q4.jpg",
+                       @"http://77g7ef.com1.z0.glb.clouddn.com/q5.jpg",
+                       @"http://77g7ef.com1.z0.glb.clouddn.com/q6.jpg",
+                       ];
+    
+    //    self.smallPics = @[
+    //                           @"http://ww1.sinaimg.cn/thumb180/006mwaFnjw1f9wlmdp6usg30bc06e7wh.gif",
+    //                           @"http://ww1.sinaimg.cn/thumb180/006mwaFnjw1f9wlmej3tcg30bc06eng2.gif",
+    //                           @"http://ww1.sinaimg.cn/thumb180/006mwaFnjw1f9wlmfd9trg30bc06ekaq.gif",
+    //                           @"http://ww1.sinaimg.cn/thumb180/006mwaFnjw1f9wlmg6ioqg30bc06etqk.gif",
+    //                           ];
+    //
+    //    self.largePics = @[
+    //                           @"http://ww1.sinaimg.cn/mw690/006mwaFnjw1f9wlmdp6usg30bc06e7wh.gif",
+    //                           @"http://ww1.sinaimg.cn/mw690/006mwaFnjw1f9wlmej3tcg30bc06eng2.gif",
+    //                           @"http://ww1.sinaimg.cn/mw690/006mwaFnjw1f9wlmfd9trg30bc06ekaq.gif",
+    //                           @"http://ww1.sinaimg.cn/mw690/006mwaFnjw1f9wlmg6ioqg30bc06etqk.gif",
+    //                           ];
     
     for (NSInteger i=0; i<self.smallPics.count; i++) {
         UIImageView *imgV = [UIImageView new];
+        imgV.clipsToBounds = YES;
         imgV.contentMode = UIViewContentModeScaleAspectFill;
         [imgV sd_setImageWithURL:[NSURL URLWithString:self.smallPics[i]]];
         imgV.tag = kBaseTag + i;
@@ -94,6 +127,11 @@
 }
 
 #pragma mark - event
+- (void)clearCache {
+    [[SDImageCache sharedImageCache]clearDisk];
+    [[SDImageCache sharedImageCache]clearMemory];
+}
+
 - (void)tap:(UITapGestureRecognizer*)ges {
     NSInteger index = ges.view.tag-kBaseTag;
     
