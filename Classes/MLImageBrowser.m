@@ -947,11 +947,6 @@ typedef NS_ENUM(NSUInteger, MLImageBrowserCollectionViewCellScrollDirection) {
 
 - (void)showHud:(BOOL)show {
     _hudView.hidden = !show;
-    if (show) {
-        [_hudIndicatorView startAnimating];
-    }else{
-        [_hudIndicatorView stopAnimating];
-    }
     
     _kAddFadeTransitionForLayer(_hudView.layer);
 }
@@ -969,34 +964,36 @@ typedef NS_ENUM(NSUInteger, MLImageBrowserCollectionViewCellScrollDirection) {
 - (void)downloadImageToSystemBrowser:(UIButton*)sender {
     [self showHud:YES];
     
-    NSInteger currentPage = [self currentPage];
-    MLImageBrowserItem *item = _items[currentPage];
-    
-    if (item.largeImage) {
-        UIImageWriteToSavedPhotosAlbum(item.largeImage, self, @selector(image:didFinishSavingWithError:contextInfo:), nil);
-    }else if (item.largeImageURL) {
-        //取得image
-        UIImageView *tempImageView = [UIImageView new];
-        tempImageView.hidden = YES;
-        [self.window addSubview:tempImageView];
-        [tempImageView sd_setImageWithURL:item.largeImageURL placeholderImage:nil completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType,NSURL *imageURL) {
-            [tempImageView removeFromSuperview];
-            if (image&&!error) {
-                UIImageWriteToSavedPhotosAlbum(image, self, @selector(image:didFinishSavingWithError:contextInfo:), nil);
-            }else{
-                //下载失败
-                [[[UIAlertView alloc]initWithTitle:@"" message:@"图片下载失败，无法保存" delegate:nil cancelButtonTitle:@"好的" otherButtonTitles: nil]show];
-                [self showHud:NO];
-            }
-        }];
-    }else{
-        UIImage *thumbImage = [item thumbImage];
-        if (thumbImage) {
-            UIImageWriteToSavedPhotosAlbum(thumbImage, self, @selector(image:didFinishSavingWithError:contextInfo:), nil);
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSInteger currentPage = [self currentPage];
+        MLImageBrowserItem *item = _items[currentPage];
+        
+        if (item.largeImage) {
+            UIImageWriteToSavedPhotosAlbum(item.largeImage, self, @selector(image:didFinishSavingWithError:contextInfo:), nil);
+        }else if (item.largeImageURL) {
+            //取得image
+            UIImageView *tempImageView = [UIImageView new];
+            tempImageView.hidden = YES;
+            [self.window addSubview:tempImageView];
+            [tempImageView sd_setImageWithURL:item.largeImageURL placeholderImage:nil completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType,NSURL *imageURL) {
+                [tempImageView removeFromSuperview];
+                if (image&&!error) {
+                    UIImageWriteToSavedPhotosAlbum(image, self, @selector(image:didFinishSavingWithError:contextInfo:), nil);
+                }else{
+                    //下载失败
+                    [[[UIAlertView alloc]initWithTitle:@"" message:@"图片下载失败，无法保存" delegate:nil cancelButtonTitle:@"好的" otherButtonTitles: nil]show];
+                    [self showHud:NO];
+                }
+            }];
         }else{
-            [self showHud:YES];
+            UIImage *thumbImage = [item thumbImage];
+            if (thumbImage) {
+                UIImageWriteToSavedPhotosAlbum(thumbImage, self, @selector(image:didFinishSavingWithError:contextInfo:), nil);
+            }else{
+                [self showHud:YES];
+            }
         }
-    }
+    });
 }
 
 // 指定回调方法
