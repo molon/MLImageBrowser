@@ -7,7 +7,6 @@
 //
 
 #import "MLImageBrowser.h"
-#import <SDWebImage/UIImageView+WebCache.h>
 
 static inline CGPoint _kCenterOfScrollView(UIScrollView *scrollView) {
     CGFloat offsetX = (scrollView.bounds.size.width > scrollView.contentSize.width)?
@@ -45,6 +44,13 @@ static inline CGRect _kConvertBoundsFromViewToViewOrWindow(UIView *bView,UIView 
     rect = [view convertRect:rect fromView:to];
     return rect;
 }
+
+#define _ml_image_browser_dispatch_main_sync_safe(block)\
+    if ([NSThread isMainThread]) {\
+    block();\
+    } else {\
+    dispatch_sync(dispatch_get_main_queue(), block);\
+    }
 
 #define kPadding 20.0f
 #define kAnimateDuration 0.25f
@@ -272,6 +278,8 @@ typedef NS_ENUM(NSUInteger, MLImageBrowserCollectionViewCellScrollDirection) {
 
 @property (nonatomic, strong) MLImageBrowserItem *item;
 
+@property (nonatomic, strong) id<MLImageBrowserLoaderProtocol> imageLoader;
+
 //这个主要是怕在动画过程当中，更新布局产生了异常画面，而在动画结束之后一定要记得还原此值以强制更新布局
 @property (nonatomic, assign) BOOL disableUpdateImageViewFrame;
 
@@ -285,6 +293,7 @@ typedef NS_ENUM(NSUInteger, MLImageBrowserCollectionViewCellScrollDirection) {
     MLImageBrowserCollectionViewCellScrollDirection _scrollDirection;
     CGPoint _lastContentOffset;
     BOOL _isImageLoaded;
+    id _loaderIdentifier;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame {
@@ -400,7 +409,12 @@ typedef NS_ENUM(NSUInteger, MLImageBrowserCollectionViewCellScrollDirection) {
 - (void)setItem:(MLImageBrowserItem *)item {
     _item = item;
     
-    [_imageView sd_cancelCurrentImageLoad];
+    //cancel current load
+    if (_loaderIdentifier) {
+        [_imageLoader cancelImageLoadForIdentifier:_loaderIdentifier];
+        _loaderIdentifier = nil;
+    }
+    
     _errorTipsLabel.hidden = YES;
     
     if (item.largeImage) {
@@ -408,25 +422,38 @@ typedef NS_ENUM(NSUInteger, MLImageBrowserCollectionViewCellScrollDirection) {
         _isImageLoaded = YES;
         [self updateImageViewFrame];
     }else if (item.largeImageURL) {
-        __weak __typeof__(self) weak_self = self;
         _loadingLayer.state = _MLImageBrowserLoadingShapeStateLayerRotate;
-        [_imageView sd_setImageWithURL:item.largeImageURL placeholderImage:[item thumbImage] options:SDWebImageRetryFailed progress:^(NSInteger receivedSize, NSInteger expectedSize) {
+        
+        //placeholder
+        _imageView.image = [item thumbImage];
+        
+        //load
+        __weak __typeof__(self) weak_self = self;
+        _loaderIdentifier = [_imageLoader loadImageWithURL:item.largeImageURL progress:^(CGFloat progress) {
             __typeof__(self) self = weak_self;
             if (!self) return;
             
-            self.loadingLayer.progress = receivedSize / (float)expectedSize;
-        } completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+            _ml_image_browser_dispatch_main_sync_safe(^{
+                self.loadingLayer.progress = progress;
+            });
+        } completed:^(UIImage * _Nonnull image, NSError * _Nonnull error) {
             __typeof__(self) self = weak_self;
             if (!self) return;
             
-            self.loadingLayer.state = _MLImageBrowserLoadingShapeStateLayerHidden;
-            if (image&&!error) {
-                _isImageLoaded = YES;
-                [self updateImageViewFrame];
-            }else{
-                self.errorTipsLabel.hidden = NO;
-            }
+            _ml_image_browser_dispatch_main_sync_safe(^{
+                self.loadingLayer.state = _MLImageBrowserLoadingShapeStateLayerHidden;
+                if (image&&!error) {
+                    self.imageView.image = image;
+                    [self.imageView setNeedsLayout];
+                
+                    _isImageLoaded = YES;
+                    [self updateImageViewFrame];
+                }else{
+                    self.errorTipsLabel.hidden = NO;
+                }
+            });
         }];
+        
         [self updateImageViewFrame];
     }else{
         _imageView.image = [item thumbImage];
@@ -582,8 +609,6 @@ typedef NS_ENUM(NSUInteger, MLImageBrowserCollectionViewCellScrollDirection) {
 @property (nonatomic, strong) UIView *hudView;
 @property (nonatomic, strong) UIActivityIndicatorView *hudIndicatorView;
 
-@property (nonatomic, strong) id<MLImageBrowserLoaderProtocol> imageLoader;
-
 @end
 
 @implementation MLImageBrowser {
@@ -591,6 +616,7 @@ typedef NS_ENUM(NSUInteger, MLImageBrowserCollectionViewCellScrollDirection) {
     BOOL _isPresented;
     UIWindow *_actionWindow;
     NSInteger _lastPage;
+    id<MLImageBrowserLoaderProtocol> _imageLoader;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame {
@@ -678,6 +704,7 @@ typedef NS_ENUM(NSUInteger, MLImageBrowserCollectionViewCellScrollDirection) {
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     MLImageBrowserCollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:NSStringFromClass([MLImageBrowserCollectionViewCell class]) forIndexPath:indexPath];
+    cell.imageLoader = _imageLoader;
     cell.item = _items[indexPath.row];
     __weak __typeof__(self) weak_self = self;
     if (!cell.didClickBlock) {
@@ -979,18 +1006,20 @@ typedef NS_ENUM(NSUInteger, MLImageBrowserCollectionViewCellScrollDirection) {
             UIImageWriteToSavedPhotosAlbum(item.largeImage, self, @selector(image:didFinishSavingWithError:contextInfo:), nil);
         }else if (item.largeImageURL) {
             //取得image
-            UIImageView *tempImageView = [UIImageView new];
-            tempImageView.hidden = YES;
-            [self.window addSubview:tempImageView];
-            [tempImageView sd_setImageWithURL:item.largeImageURL placeholderImage:nil completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType,NSURL *imageURL) {
-                [tempImageView removeFromSuperview];
-                if (image&&!error) {
-                    UIImageWriteToSavedPhotosAlbum(image, self, @selector(image:didFinishSavingWithError:contextInfo:), nil);
-                }else{
-                    //下载失败
-                    [[[UIAlertView alloc]initWithTitle:@"" message:@"图片下载失败，无法保存" delegate:nil cancelButtonTitle:@"好的" otherButtonTitles: nil]show];
-                    [self showHud:NO];
-                }
+            __weak __typeof__(self) weak_self = self;
+            [_imageLoader loadImageWithURL:item.largeImageURL progress:nil completed:^(UIImage * _Nonnull image, NSError * _Nonnull error) {
+                __typeof__(self) self = weak_self;
+                if (!self) return;
+                
+                _ml_image_browser_dispatch_main_sync_safe(^{
+                    if (image&&!error) {
+                        UIImageWriteToSavedPhotosAlbum(image, self, @selector(image:didFinishSavingWithError:contextInfo:), nil);
+                    }else{
+                        //下载失败
+                        [[[UIAlertView alloc]initWithTitle:@"" message:@"图片下载失败，无法保存" delegate:nil cancelButtonTitle:@"好的" otherButtonTitles: nil]show];
+                        [self showHud:NO];
+                    }
+                });
             }];
         }else{
             UIImage *thumbImage = [item thumbImage];
@@ -1007,7 +1036,7 @@ typedef NS_ENUM(NSUInteger, MLImageBrowserCollectionViewCellScrollDirection) {
 - (void)image:(UIImage *)image didFinishSavingWithError:(NSError *)error contextInfo:(void *)contextInfo {
     [self showHud:NO];
     
-    [[[UIAlertView alloc]initWithTitle:@"" message:error?@"保存图片失败":@"已保存至相册" delegate:nil cancelButtonTitle:@"好的" otherButtonTitles: nil]show];
+    [[[UIAlertView alloc]initWithTitle:@"" message:error?@"保存图片失败，请检查是否开启访问权限":@"已保存至相册" delegate:nil cancelButtonTitle:@"好的" otherButtonTitles: nil]show];
 }
 
 - (void)setDisplaySaveButton:(BOOL)displaySaveButton {

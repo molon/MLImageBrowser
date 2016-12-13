@@ -21,18 +21,16 @@
 
 - (id)loadImageWithURL:(NSURL *)url progress:(void(^)(CGFloat progress))progressBlock completed:(void(^)(UIImage *image, NSError *error))completedBlock {
     return [[SDWebImageManager sharedManager] downloadImageWithURL:url options:SDWebImageRetryFailed progress:^(NSInteger receivedSize, NSInteger expectedSize) {
-        dispatch_main_sync_safe(^{
+        if (progressBlock) {
             progressBlock((CGFloat)receivedSize / expectedSize);
-        });
+        }
     } completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
-        dispatch_main_sync_safe(^{
-            if (!finished) {
-                return;
-            }
-            if (completedBlock && finished) {
-                completedBlock(image, error);
-            }
-        });
+        if (!finished) {
+            return;
+        }
+        if (completedBlock && finished) {
+            completedBlock(image, error);
+        }
     }];
 }
 

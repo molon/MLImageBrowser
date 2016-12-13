@@ -12,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol MLImageBrowserLoaderProtocol <NSObject>
 
-- (id)loadImageWithURL:(NSURL *)url progress:(void(^)(CGFloat progress))progressBlock completed:(void(^)(UIImage *image, NSError *error))completedBlock;
+- (id)loadImageWithURL:(NSURL *)url progress:(nullable void(^)(CGFloat progress))progressBlock completed:(nullable void(^)(UIImage *image, NSError *error))completedBlock;
 
 - (void)cancelImageLoadForIdentifier:(id)loadIdentifier;
 
