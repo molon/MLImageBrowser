@@ -10,6 +10,14 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@protocol MLImageBrowserLoaderProtocol <NSObject>
+
+- (id)loadImageWithURL:(NSURL *)url progress:(void(^)(CGFloat progress))progressBlock completed:(void(^)(UIImage *image, NSError *error))completedBlock;
+
+- (void)cancelImageLoadForIdentifier:(id)loadIdentifier;
+
+@end
+
 @interface MLImageBrowserItem : NSObject
 
 @property (nullable, nonatomic, strong, readonly) UIView *thumbView;
@@ -34,7 +42,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic, assign) BOOL displaySaveButton;
 
-- (void)presentWithItems:(NSArray*)items atIndex:(NSInteger)index onWindowLevel:(UIWindowLevel)windowLevel animated:(BOOL)animated completion:(nullable void (^)(void))completion;
+- (void)presentWithLoader:(id<MLImageBrowserLoaderProtocol>)loader items:(NSArray*)items atIndex:(NSInteger)index onWindowLevel:(UIWindowLevel)windowLevel animated:(BOOL)animated completion:(nullable void (^)(void))completion;
 
 - (void)dismissWithAnimted:(BOOL)animated completion:(nullable void (^)(void))completion;
 

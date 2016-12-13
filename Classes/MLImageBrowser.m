@@ -582,6 +582,8 @@ typedef NS_ENUM(NSUInteger, MLImageBrowserCollectionViewCellScrollDirection) {
 @property (nonatomic, strong) UIView *hudView;
 @property (nonatomic, strong) UIActivityIndicatorView *hudIndicatorView;
 
+@property (nonatomic, strong) id<MLImageBrowserLoaderProtocol> imageLoader;
+
 @end
 
 @implementation MLImageBrowser {
@@ -737,13 +739,16 @@ typedef NS_ENUM(NSUInteger, MLImageBrowserCollectionViewCellScrollDirection) {
 }
 
 #pragma mark - call
-- (void)presentWithItems:(NSArray*)items atIndex:(NSInteger)index onWindowLevel:(UIWindowLevel)windowLevel animated:(BOOL)animated completion:(void (^)(void))completion {
+- (void)presentWithLoader:(id<MLImageBrowserLoaderProtocol>)loader items:(NSArray*)items atIndex:(NSInteger)index onWindowLevel:(UIWindowLevel)windowLevel animated:(BOOL)animated completion:(nullable void (^)(void))completion {
+    NSAssert(loader, @"downloader cant be nil");
     NSAssert(!_isPresented, @"只可present一次");
     NSAssert(windowLevel>=UIWindowLevelNormal, @"windowLevel must >= UIWindowLevelNormal ");
     NSAssert(index>=0&&index<items.count, @"must 0<=index<items.count");
-    if (index<0||index>=items.count) {
+    if (!loader||index<0||index>=items.count) {
         return;
     }
+    _imageLoader = loader;
+    
     windowLevel = MAX(UIWindowLevelNormal, windowLevel);
     
     //设置items

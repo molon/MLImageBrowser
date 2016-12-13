@@ -9,6 +9,7 @@
 #import "ViewController.h"
 #import <MLImageBrowser/MLImageBrowser.h>
 #import <SDWebImage/UIImageView+WebCache.h>
+#import "SDWebImageLoaderForMLImageBrowser.h"
 
 #define kBaseTag 100
 @interface ViewController ()
@@ -140,7 +141,7 @@
     for (NSInteger i=0; i<self.smallPics.count; i++) {
         [its addObject:[MLImageBrowserItem itemWithThumbView:[self.view viewWithTag:kBaseTag+i] largeImageURL:self.largePics[i]]];
     }
-    [bl presentWithItems:its atIndex:index onWindowLevel:UIWindowLevelNormal animated:YES completion:nil];
+    [bl presentWithLoader:[SDWebImageLoaderForMLImageBrowser sharedInstance] items:its atIndex:index onWindowLevel:UIWindowLevelNormal animated:YES completion:nil];
 }
 
 @end
