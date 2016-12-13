@@ -8,4 +8,5 @@ target 'MLImageBrowser' do
 	project 'MLImageBrowser.xcodeproj'
     
     pod 'MLImageBrowser', :path => '../MLImageBrowser.podspec'
+	pod 'SDWebImage', '~> 3.8.2'
 end

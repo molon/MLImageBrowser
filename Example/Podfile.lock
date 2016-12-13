@@ -1,21 +1,21 @@
 PODS:
-  - MLImageBrowser (0.0.3):
-    - SDWebImage (~> 3.8.2)
+  - MLImageBrowser (0.0.3)
   - SDWebImage (3.8.2):
     - SDWebImage/Core (= 3.8.2)
   - SDWebImage/Core (3.8.2)
 
 DEPENDENCIES:
   - MLImageBrowser (from `../MLImageBrowser.podspec`)
+  - SDWebImage (~> 3.8.2)
 
 EXTERNAL SOURCES:
   MLImageBrowser:
     :path: "../MLImageBrowser.podspec"
 
 SPEC CHECKSUMS:
-  MLImageBrowser: e62359299dcf5edd855a0593aa2de67bc8586f0e
+  MLImageBrowser: 7a673d0fa5739388b0fe966011d1a928e63c8e2c
   SDWebImage: '098e97e6176540799c27e804c96653ee0833d13c'
 
-PODFILE CHECKSUM: e84a109eb46c5d82008d257f434cb772415e1648
+PODFILE CHECKSUM: 0f00c261ad5aea0d35cda4dcc7d77cfe2997bea0
 
 COCOAPODS: 1.1.1
