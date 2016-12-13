@@ -55,7 +55,7 @@ static inline CGRect _kConvertBoundsFromViewToViewOrWindow(UIView *bView,UIView 
 #define kPadding 20.0f
 #define kAnimateDuration 0.25f
 #define kMinMaximumZoomScale 2.5f
-#define kAnimateScaleForSelf 1.2f //没有缩略图的时候的自身scale动画值
+#define kAnimateScaleForSelf 1.10f //没有缩略图的时候的自身scale动画值
 #define kMLImageBrowserCollectionViewCellPanOverstepHeight 80.0f
 
 @interface MLImageBrowserItem()
@@ -691,7 +691,7 @@ typedef NS_ENUM(NSUInteger, MLImageBrowserCollectionViewCellScrollDirection) {
         [_hudView addSubview:_hudIndicatorView];
         [self addSubview:_hudView];
         
-        _dimmingView.alpha = _dimmingViewAlpha = 1.0f;
+        self.dimmingViewAlpha = 1.0f;
         self.displaySaveButton = YES;
     }
     return self;
@@ -1037,6 +1037,14 @@ typedef NS_ENUM(NSUInteger, MLImageBrowserCollectionViewCellScrollDirection) {
     [self showHud:NO];
     
     [[[UIAlertView alloc]initWithTitle:@"" message:error?@"保存图片失败，请检查是否开启访问权限":@"已保存至相册" delegate:nil cancelButtonTitle:@"好的" otherButtonTitles: nil]show];
+}
+
+#pragma mark - setter
+- (void)setDimmingViewAlpha:(CGFloat)dimmingViewAlpha {
+    NSAssert(!_isPresented, @"setDimmingViewAlpha: only can be excuted before presenting");
+    _dimmingViewAlpha = dimmingViewAlpha;
+    
+    _dimmingView.alpha = dimmingViewAlpha;
 }
 
 - (void)setDisplaySaveButton:(BOOL)displaySaveButton {
