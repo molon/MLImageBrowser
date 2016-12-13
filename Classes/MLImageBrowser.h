@@ -24,6 +24,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface MLImageBrowser : UIView
 
+/**
+ default 1.0f
+ */
+@property (nonatomic, assign) CGFloat dimmingViewAlpha;
+
+/**
+ default YES
+ */
+@property (nonatomic, assign) BOOL displaySaveButton;
+
 - (void)presentWithItems:(NSArray*)items atIndex:(NSInteger)index onWindowLevel:(UIWindowLevel)windowLevel animated:(BOOL)animated completion:(nullable void (^)(void))completion;
 
 - (void)dismissWithAnimted:(BOOL)animated completion:(nullable void (^)(void))completion;

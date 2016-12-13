@@ -134,7 +134,7 @@
 
 - (void)tap:(UITapGestureRecognizer*)ges {
     NSInteger index = ges.view.tag-kBaseTag;
-    
+
     MLImageBrowser *bl = [MLImageBrowser new];
     NSMutableArray *its = [NSMutableArray arrayWithCapacity:self.smallPics.count];
     for (NSInteger i=0; i<self.smallPics.count; i++) {

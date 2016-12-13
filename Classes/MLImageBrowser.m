@@ -50,7 +50,7 @@ static inline CGRect _kConvertBoundsFromViewToViewOrWindow(UIView *bView,UIView 
 #define kAnimateDuration 0.25f
 #define kMinMaximumZoomScale 2.5f
 #define kAnimateScaleForSelf 1.2f //没有缩略图的时候的自身scale动画值
-#define kMLImageBrowserCollectionViewCellPanOverstepHeight 100.0f
+#define kMLImageBrowserCollectionViewCellPanOverstepHeight 80.0f
 
 @interface MLImageBrowserItem()
 
@@ -654,7 +654,6 @@ typedef NS_ENUM(NSUInteger, MLImageBrowserCollectionViewCellScrollDirection) {
             v;
         });
         
-        
         [self addSubview:_dimmingView];
         [self addSubview:_collectionView];
         [_bottomContainerView addSubview:_pageLabel];
@@ -663,6 +662,9 @@ typedef NS_ENUM(NSUInteger, MLImageBrowserCollectionViewCellScrollDirection) {
         
         [_hudView addSubview:_hudIndicatorView];
         [self addSubview:_hudView];
+        
+        _dimmingView.alpha = _dimmingViewAlpha = 1.0f;
+        self.displaySaveButton = YES;
     }
     return self;
 }
@@ -695,7 +697,7 @@ typedef NS_ENUM(NSUInteger, MLImageBrowserCollectionViewCellScrollDirection) {
             if (self->_ignorePull) {
                 return;
             }
-            self.dimmingView.alpha = 1.0f-progress;
+            self.dimmingView.alpha = self.dimmingViewAlpha-progress*self.dimmingViewAlpha;
         }];
     }
     return cell;
@@ -792,7 +794,7 @@ typedef NS_ENUM(NSUInteger, MLImageBrowserCollectionViewCellScrollDirection) {
             [self displayBottomContainer:NO];
             cell.disableUpdateImageViewFrame = YES;
             [UIView animateWithDuration:duration delay:0.0f options:UIViewAnimationOptionCurveEaseInOut animations:^{
-                _dimmingView.alpha = 1.0f;
+                _dimmingView.alpha = _dimmingViewAlpha;
                 cell.imageView.frame = cell.imageContainerView.bounds;
             } completion:^(BOOL finished) {
                 item.thumbView.hidden = item.originalHidden;
@@ -940,7 +942,7 @@ typedef NS_ENUM(NSUInteger, MLImageBrowserCollectionViewCellScrollDirection) {
 }
 
 - (void)displayBottomContainer:(BOOL)display {
-    _pageLabel.hidden = _saveButton.hidden = !display;
+    _bottomContainerView.hidden = !display;
     
     _kAddFadeTransitionForLayer(_bottomContainerView.layer);
 }
@@ -1002,4 +1004,11 @@ typedef NS_ENUM(NSUInteger, MLImageBrowserCollectionViewCellScrollDirection) {
     
     [[[UIAlertView alloc]initWithTitle:@"" message:error?@"保存图片失败":@"已保存至相册" delegate:nil cancelButtonTitle:@"好的" otherButtonTitles: nil]show];
 }
+
+- (void)setDisplaySaveButton:(BOOL)displaySaveButton {
+    _displaySaveButton = displaySaveButton;
+    
+    _saveButton.hidden = !displaySaveButton;
+}
+
 @end
