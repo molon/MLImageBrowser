@@ -111,16 +111,14 @@ static inline CGRect _kConvertBoundsFromViewToViewOrWindow(UIView *bView,UIView 
     //keyWindow的话可能是UIAlert产生的，其又会要求这里去给予合适的UIInterfaceOrientationMask等值，就会产生死循环。
     //所以我们只能用AppDelegate的初始window
     UIWindow *window = [UIApplication sharedApplication].delegate.window;
-    UIViewController *viewController = window.rootViewController;
-    SEL viewControllerForSupportedInterfaceOrientationsSelector =
-    NSSelectorFromString(@"_viewControllerForSupportedInterfaceOrientations");
-    if ([viewController respondsToSelector:viewControllerForSupportedInterfaceOrientationsSelector]) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-        viewController = [viewController performSelector:viewControllerForSupportedInterfaceOrientationsSelector];
-#pragma clang diagnostic pop
+    UIViewController *rootViewController = window.rootViewController;
+    SEL viewControllerForSupportedInterfaceOrientationsSelector = NSSelectorFromString(@"_viewControllerForSupportedInterfaceOrientations");
+    @try {
+        UIViewController *viewController = [rootViewController performSelector:viewControllerForSupportedInterfaceOrientationsSelector];
+        return viewController?viewController:rootViewController;
+    } @catch (NSException *exception) {
+        return rootViewController;
     }
-    return viewController;
 }
 
 - (UIInterfaceOrientationMask)supportedInterfaceOrientations {
