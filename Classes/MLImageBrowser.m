@@ -114,7 +114,10 @@ static inline CGRect _kConvertBoundsFromViewToViewOrWindow(UIView *bView,UIView 
     UIViewController *rootViewController = window.rootViewController;
     SEL viewControllerForSupportedInterfaceOrientationsSelector = NSSelectorFromString(@"_viewControllerForSupportedInterfaceOrientations");
     @try {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
         UIViewController *viewController = [rootViewController performSelector:viewControllerForSupportedInterfaceOrientationsSelector];
+#pragma clang diagnostic pop
         return viewController?viewController:rootViewController;
     } @catch (NSException *exception) {
         return rootViewController;
