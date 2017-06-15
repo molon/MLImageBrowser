@@ -17,14 +17,6 @@ static inline CGPoint _kCenterOfScrollView(UIScrollView *scrollView) {
                        scrollView.contentSize.height * 0.5 + offsetY);
 }
 
-static inline void _kAddFadeTransitionForLayer(CALayer *layer) {
-    CATransition *animation = [CATransition animation];
-    animation.duration = .15f;
-    animation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
-    animation.type = kCATransitionFade;
-    [layer addAnimation:animation forKey:nil];
-}
-
 static inline CGRect _kConvertBoundsFromViewToViewOrWindow(UIView *bView,UIView *view) {
     CGRect rect = bView.bounds;
     if (!view) {
@@ -430,11 +422,16 @@ typedef NS_ENUM(NSUInteger, MLImageBrowserCollectionViewCellScrollDirection) {
         
         //load
         __weak __typeof__(self) weak_self = self;
-        _loaderIdentifier = [_imageLoader loadImageWithURL:item.largeImageURL progress:^(CGFloat progress) {
+        NSURL *url = item.largeImageURL;
+        _loaderIdentifier = [_imageLoader loadImageWithURL:url progress:^(CGFloat progress) {
             __typeof__(self) self = weak_self;
             if (!self) return;
             
             _ml_image_browser_dispatch_main_sync_safe(^{
+                if (![url isEqual:self.item.largeImageURL]) {
+                    return;
+                }
+                
                 self.loadingLayer.progress = progress;
             });
         } completed:^(UIImage * _Nonnull image, NSError * _Nonnull error) {
@@ -442,9 +439,14 @@ typedef NS_ENUM(NSUInteger, MLImageBrowserCollectionViewCellScrollDirection) {
             if (!self) return;
             
             _ml_image_browser_dispatch_main_sync_safe(^{
+                if (![url isEqual:self.item.largeImageURL]) {
+                    return;
+                }
+                
                 self.loadingLayer.state = _MLImageBrowserLoadingShapeStateLayerHidden;
                 if (image&&!error) {
                     self.imageView.image = image;
+                    self.item.largeImage = image;
                     [self.imageView setNeedsLayout];
                 
                     _isImageLoaded = YES;
@@ -674,7 +676,7 @@ typedef NS_ENUM(NSUInteger, MLImageBrowserCollectionViewCellScrollDirection) {
         _hudView = ({
             UIView *v = [UIView new];
             v.backgroundColor = [UIColor colorWithWhite:0.000 alpha:0.604];
-            v.hidden = YES;
+            v.alpha = 0.0f;
             v;
         });
         _hudIndicatorView = ({
@@ -822,17 +824,18 @@ typedef NS_ENUM(NSUInteger, MLImageBrowserCollectionViewCellScrollDirection) {
             cell.imageView.frame = thumbViewFrame;
             
             _dimmingView.alpha = 0.0f;
+            _bottomContainerView.alpha = 0.0f;
             item.thumbView.hidden = YES;
             [cell showProgressLayer:NO];
-            [self displayBottomContainer:NO];
             cell.disableUpdateImageViewFrame = YES;
             [UIView animateWithDuration:duration delay:0.0f options:UIViewAnimationOptionCurveEaseInOut animations:^{
                 _dimmingView.alpha = _dimmingViewAlpha;
+                _bottomContainerView.alpha = 1.0f;
+                
                 cell.imageView.frame = cell.imageContainerView.bounds;
             } completion:^(BOOL finished) {
                 item.thumbView.hidden = item.originalHidden;
                 [cell showProgressLayer:YES];
-                [self displayBottomContainer:YES];
                 cell.disableUpdateImageViewFrame = NO;
                 
                 self.userInteractionEnabled = YES;
@@ -877,10 +880,11 @@ typedef NS_ENUM(NSUInteger, MLImageBrowserCollectionViewCellScrollDirection) {
         
         item.thumbView.hidden = YES;
         [cell showProgressLayer:NO];
-        [self displayBottomContainer:NO];
         cell.disableUpdateImageViewFrame = YES;
         [UIView animateWithDuration:duration delay:0.0f options:UIViewAnimationOptionBeginFromCurrentState|UIViewAnimationOptionCurveEaseInOut animations:^{
             _dimmingView.alpha = 0.0f;
+            _bottomContainerView.alpha = 0.0f;
+            
             cell.imageView.frame = thumbViewFrame;
         } completion:^(BOOL finished) {
             item.thumbView.hidden = item.originalHidden;
@@ -919,7 +923,6 @@ typedef NS_ENUM(NSUInteger, MLImageBrowserCollectionViewCellScrollDirection) {
     self.userInteractionEnabled = NO;
     cell.scrollView.bounces = NO;
     [cell showProgressLayer:NO];
-    [self displayBottomContainer:NO];
     [UIView animateWithDuration:kAnimateDuration delay:0.0f options:UIViewAnimationOptionBeginFromCurrentState|UIViewAnimationOptionCurveEaseInOut animations:^{
         CGRect frame = cell.scrollView.frame;
         if (direction==MLImageBrowserCollectionViewCellScrollDirectionBottom) {
@@ -929,6 +932,7 @@ typedef NS_ENUM(NSUInteger, MLImageBrowserCollectionViewCellScrollDirection) {
         }
         cell.scrollView.frame = frame;
         _dimmingView.alpha = 0.0f;
+        _bottomContainerView.alpha = 0.0f;
     } completion:^(BOOL finished) {
         [self afterDismiss];
     }];
@@ -974,16 +978,10 @@ typedef NS_ENUM(NSUInteger, MLImageBrowserCollectionViewCellScrollDirection) {
     }
 }
 
-- (void)displayBottomContainer:(BOOL)display {
-    _bottomContainerView.hidden = !display;
-    
-    _kAddFadeTransitionForLayer(_bottomContainerView.layer);
-}
-
 - (void)showHud:(BOOL)show {
-    _hudView.hidden = !show;
-    
-    _kAddFadeTransitionForLayer(_hudView.layer);
+    [UIView animateWithDuration:.15f animations:^{
+        _hudView.alpha = show?1.0f:0.0f;
+    }];
 }
 
 #pragma mark - scroll

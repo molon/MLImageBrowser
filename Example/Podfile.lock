@@ -1,5 +1,5 @@
 PODS:
-  - MLImageBrowser (0.0.3)
+  - MLImageBrowser (0.1.1)
   - SDWebImage (3.8.2):
     - SDWebImage/Core (= 3.8.2)
   - SDWebImage/Core (3.8.2)
@@ -13,9 +13,9 @@ EXTERNAL SOURCES:
     :path: "../MLImageBrowser.podspec"
 
 SPEC CHECKSUMS:
-  MLImageBrowser: 7a673d0fa5739388b0fe966011d1a928e63c8e2c
-  SDWebImage: '098e97e6176540799c27e804c96653ee0833d13c'
+  MLImageBrowser: c265163756512cd22b09145454c144b2b4996ca7
+  SDWebImage: 098e97e6176540799c27e804c96653ee0833d13c
 
 PODFILE CHECKSUM: 0f00c261ad5aea0d35cda4dcc7d77cfe2997bea0
 
-COCOAPODS: 1.1.1
+COCOAPODS: 1.2.1
